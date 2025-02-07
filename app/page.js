@@ -7,9 +7,11 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [artists, setArtists] = useState([]);
   const [error, setError] = useState(null);
+  const [isLoading, setLoading] = useState(false);
   const router = useRouter();
 
   const fetchArtists = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `https://assignmentback-pdc2.onrender.com/artists`
@@ -17,12 +19,15 @@ export default function Home() {
 
       if (response.data.status === "success") {
         setArtists(response.data.data);
+        setLoading(false);
       } else {
+        setLoading(false);
         throw new Error(
           `Error while matching response: ${response.data.message}`
         );
       }
     } catch (error) {
+      setLoading(false);
       setError(error.message || error.data.message);
       console.log("Error while fetching artists", error);
     }
@@ -31,6 +36,24 @@ export default function Home() {
   useEffect(() => {
     fetchArtists();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="relative">
+            <div className="relative w-32 h-32">
+              <div className="absolute w-full h-full rounded-full border-[3px] border-gray-100/10 border-r-[#0ff] border-b-[#0ff] animate-spin duration-300"></div>
+
+              <div className="absolute w-full h-full rounded-full border-[3px] border-gray-100/10 border-t-[#0ff] animate-spin"></div>
+            </div>
+
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#0ff]/10 via-transparent to-[#0ff]/5 animate-pulse rounded-full blur-sm"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center h-[100vh] w-full flex-col">
@@ -56,7 +79,7 @@ export default function Home() {
           <tbody>
             {artists.map((artist) => {
               return (
-                <tr>
+                <tr key={artist.artist_id}>
                   <td>{artist.artist_id}</td>
                   <td>{artist.name}</td>
                 </tr>
